@@ -16,6 +16,7 @@ import zio.clock._
 import zio.console._
 import zio.interop.catz._
 import zio.{Has, Managed, RIO, Task, UIO, URIO, ZIO, ZLayer, ZManaged}
+import zio.magic._
 
 
 object Repo {
@@ -64,10 +65,11 @@ object Repo {
       }
     }
 
-    ZLayer.fromService[DatabaseConfig, Has[Repo.Service]] {
-      (databaseConfig) => for {
-        _          <- initDb(databaseConfig.get).toManaged_
-        transactor <- mkTransactor(databaseConfig.get)
+    ZLayer.fromManaged {
+      for {
+        cfg        <- config.getDatabaseConfig.toManaged_
+        _          <- initDb(cfg).toManaged_
+        transactor <- mkTransactor(cfg)
       } yield ServiceImpl(transactor)
     }
   }
@@ -104,17 +106,25 @@ object Main extends zio.App {
     } yield zio.ExitCode.success
 
   val program2 = for {
-    _ <- putStrLn(s"Welcome to ZIO!").provideLayer(Console.live)
-    repo <- Repo.repoGet.provideLayer(AppConfig.live ++ Repo.live)
-    _ <- putStrLn(s"${repo.get}").provideLayer(Console.live)
-  } yield zio.ExitCode.success
+    _ <- putStrLn(s"Welcome to ZIO!")
+    repo <- Repo.repoGet
+    i <- repo.get
+    _ <- putStrLn(s"${i}")
+  } yield ()
 
   def run(args: List[String]): URIO[zio.ZEnv, zio.ExitCode] = {
     //program
     //  .provideLayer(Blocking.any ++ Clock.live ++ Console.live ++ AppConfig.live)
     //  .exitCode
 
-    program2.exitCode
+    program2
+      .inject(
+        Blocking.live,
+        Console.live,
+        AppConfig.live,
+        DatabaseConfig.fromAppConfig,
+        Repo.live)
+      .exitCode
   }
 
   def runHttp[R <: Clock](
