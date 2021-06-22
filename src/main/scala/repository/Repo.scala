@@ -14,19 +14,37 @@ import zio.blocking.Blocking
 import zio.interop.catz._
 
 object Repo {
+  type Repo = Has[Repo.Service]
+
   trait Service {
     def get: UIO[Option[Int]]
+    def insertMessage(message: String): UIO[Unit]
+    def selectRandomMessage(): UIO[Option[String]]
   }
 
   case class ServiceImpl(xa: Transactor[Task]) extends Service {
-    override def get: UIO[Option[Int]] = {
-      for {
-        n <- sql"select 42".query[Int].option.transact(xa).orDie
-      } yield n
-    }
+    override def get: UIO[Option[Int]] = for {
+      n <- sql"select 42".query[Int].option.transact(xa).orDie
+    } yield n
+
+    override def insertMessage(message: String): UIO[Unit] = for {
+      _ <- sql"INSERT INTO messages (message) VALUES ($message)"
+        .update
+        .withUniqueGeneratedKeys[Long]("id")
+        .transact(xa)
+        .orDie
+    } yield ()
+
+    override def selectRandomMessage(): UIO[Option[String]] = for {
+      message <- sql"SELECT message FROM messages ORDER BY RANDOM() LIMIT 1"
+        .query[String]
+        .option
+        .transact(xa)
+        .orDie
+    } yield message
   }
 
-  val live: ZLayer[Blocking with DatabaseConfig, Throwable, Has[Repo.Service]] = {
+  val live: ZLayer[Blocking with DatabaseConfig, Throwable, Repo] = {
     def initDb(cfg: DatabaseConfig.Config): Task[Unit] = {
       Task {
         Flyway
@@ -38,8 +56,8 @@ object Repo {
     }
 
     def mkTransactor(
-                      cfg: DatabaseConfig.Config
-                    ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] = {
+      cfg: DatabaseConfig.Config
+    ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] = {
       ZIO.runtime[Blocking].toManaged_.flatMap { implicit rt =>
         for {
           transactEC <- Managed.succeed(
@@ -72,5 +90,5 @@ object Repo {
     }
   }
 
-  def repoGet: URIO[Has[Repo.Service], Repo.Service] = ZIO.access(_.get)
+  def repoGet: URIO[Repo, Repo.Service] = ZIO.access(_.get)
 }

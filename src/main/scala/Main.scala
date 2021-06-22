@@ -4,6 +4,7 @@ import config.{AppConfig, DatabaseConfig}
 import repository.Repo
 
 import cats.effect.ExitCode
+import org.github.ainr.bloate4.services.MessagesService
 import org.http4s.HttpApp
 import org.http4s.implicits._
 import org.http4s.server.Router
@@ -29,7 +30,8 @@ object Main extends zio.App {
     config <- config.getAppConfig
     _ <- putStrLn(s"${config.http}")
     _ <- putStrLn(s"${config.database}")
-    httpApp = Router[AppTask](config.http.baseUrl -> http.handler.routes()).orNotFound
+    messagesService <- MessagesService.access
+    httpApp = Router[AppTask](config.http.baseUrl -> http.handler.routes(messagesService)).orNotFound
     _ <- runHttp(httpApp, config.http.port)
     } yield zio.ExitCode.success
 
@@ -42,6 +44,7 @@ object Main extends zio.App {
         Clock.live,
         AppConfig.live,
         DatabaseConfig.fromAppConfig,
+        MessagesService.live,
         Repo.live)
       .exitCode
   }
