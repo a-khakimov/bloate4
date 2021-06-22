@@ -6,7 +6,7 @@ idePackagePrefix := Some("org.github.ainr.bloate4")
 
 inThisBuild(
   List(
-    organization := "com.schuwalow",
+    organization := "com.ainr",
     developers := List(
       Developer(
         "ainr",

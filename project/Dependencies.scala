@@ -11,6 +11,7 @@ object Dependencies {
     val kindProjector    = "0.13.0"
     val flyway           = "7.8.2"
     val zioLogging       = "0.5.8"
+    val log4j            = "2.14.1"
   }
 
   import Versions._
@@ -21,6 +22,9 @@ object Dependencies {
       "dev.zio"                      %% "zio-test-sbt"        % zio   % "test",
       "dev.zio"                      %% "zio-test"            % zio   % "test",
       "dev.zio"                      %% "zio"                 % zio,
+      "org.apache.logging.log4j"      % "log4j-api"           % log4j,
+      "org.apache.logging.log4j"      % "log4j-core"          % log4j,
+      "org.apache.logging.log4j"      % "log4j-slf4j-impl"    % log4j,
       "dev.zio"                      %% "zio-interop-cats"    % zioInteropCats,
       "dev.zio"                      %% "zio-logging-slf4j"   % zioLogging,
       "dev.zio"                      %% "zio-logging"         % zioLogging,
