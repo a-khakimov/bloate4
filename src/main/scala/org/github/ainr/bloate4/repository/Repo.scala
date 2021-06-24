@@ -2,15 +2,14 @@ package org.github.ainr.bloate4.repository
 
 import cats.effect.Blocker
 import doobie.hikari.HikariTransactor
-import doobie.implicits.toSqlInterpolator
+import doobie.implicits.{toSqlInterpolator, _}
 import doobie.util.transactor.Transactor
-import doobie.implicits._
 import org.flywaydb.core.Flyway
-import org.github.ainr.bloate4.config
 import org.github.ainr.bloate4.config.DatabaseConfig
-import zio.{Has, Managed, Task, UIO, URIO, ZIO, ZLayer, ZManaged}
+import org.github.ainr.bloate4.config.DatabaseConfig.DatabaseConfig
 import zio.blocking.Blocking
 import zio.interop.catz._
+import zio.{Has, Managed, Task, UIO, URIO, ZIO, ZLayer, ZManaged}
 
 object Repo {
   type Repo = Has[Repo.Service]
@@ -84,7 +83,7 @@ object Repo {
 
     ZLayer.fromManaged {
       for {
-        cfg <- config.getDatabaseConfig.toManaged_
+        cfg <- DatabaseConfig.getDatabaseConfig.toManaged_
         _ <- initDb(cfg).toManaged_
         transactor <- mkTransactor(cfg)
       } yield ServiceImpl(transactor)

@@ -38,6 +38,8 @@ object Dependencies {
       "org.http4s"                   %% "http4s-circe"        % http4s,
       "org.http4s"                   %% "http4s-dsl"          % http4s,
       "io.github.kitlangton"         %% "zio-magic"           % "0.3.2",
+      "org.fomkin"                   %% "korolev-http4s"      % "0.17.1",
+      "org.fomkin"                   %% "korolev-zio"         % "0.17.1",
       "org.flywaydb"                  % "flyway-core"         % flyway,
       compilerPlugin(("org.typelevel" % "kind-projector"      % kindProjector).cross(CrossVersion.full))
     )

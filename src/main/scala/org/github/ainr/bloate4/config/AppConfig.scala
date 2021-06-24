@@ -2,9 +2,10 @@ package org.github.ainr.bloate4.config
 
 import pureconfig.generic.semiauto.deriveConvert
 import pureconfig.{ConfigConvert, ConfigSource}
-import zio.{Layer, ZIO, ZLayer}
+import zio.{Has, Layer, URIO, ZIO, ZLayer}
 
 object AppConfig {
+  type AppConfig = Has[AppConfig.Config]
 
   final case class Config(
     http: HttpConfig.Config,
@@ -19,4 +20,6 @@ object AppConfig {
         .fromEither(ConfigSource.default.load[Config])
         .mapError(failures => new IllegalStateException(s"Error loading configuration: $failures"))
     }
+
+  val getAppConfig: URIO[AppConfig, AppConfig.Config] = ZIO.access(_.get)
 }

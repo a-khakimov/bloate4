@@ -13,8 +13,9 @@ import zio.blocking.Blocking
 import zio.clock._
 import zio.console._
 import zio.interop.catz._
+import zio.logging.slf4j.Slf4jLogger
+import zio.{RIO, URIO, ZIO, logging}
 import zio.magic._
-import zio.{RIO, URIO, ZIO}
 
 
 object Main extends zio.App {
@@ -22,13 +23,10 @@ object Main extends zio.App {
   type AppTask[A] = RIO[Console with Clock, A]
 
   val program = for {
-    _ <- putStrLn(s"Welcome to ZIO!")
-    repo <- Repo.repoGet
-    i <- repo.get
-    _ <- putStrLn(s"$i")
-    config <- config.getAppConfig
-    _ <- putStrLn(s"${config.http}")
-    _ <- putStrLn(s"${config.database}")
+    _ <- logging.log.info(s"Welcome to bloate4!")
+    config <- AppConfig.getAppConfig
+    _ <- logging.log.info(s"Http configs - ${config.http}")
+    _ <- logging.log.info(s"Database configs - ${config.database}")
     messagesService <- MessagesService.access
     httpApp = Router[AppTask](config.http.baseUrl -> http.handler.routes(messagesService)).orNotFound
     _ <- runHttp(httpApp, config.http.port)
@@ -37,7 +35,7 @@ object Main extends zio.App {
   def run(args: List[String]): URIO[zio.ZEnv, zio.ExitCode] = {
     program
       .inject(
-        //Slf4jLogger.make((_, msg) => msg),
+        Slf4jLogger.make((_, msg) => msg),
         Blocking.live,
         Console.live,
         Clock.live,
