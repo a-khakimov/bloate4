@@ -56,8 +56,8 @@ object Repo {
     }
 
     def mkTransactor(
-                      cfg: DatabaseConfig.Config
-                    ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] = {
+      cfg: DatabaseConfig.Config
+    ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] = {
       ZIO.runtime[Blocking].toManaged_.flatMap { implicit rt =>
         for {
           transactEC <- Managed.succeed(

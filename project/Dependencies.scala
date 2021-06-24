@@ -33,6 +33,7 @@ object Dependencies {
       "dev.zio"                      %% "zio-logging"         % zioLogging,
       "org.tpolecat"                 %% "doobie-core"         % doobie,
       "org.tpolecat"                 %% "doobie-h2"           % doobie,
+      "org.tpolecat"                 %% "doobie-postgres"     % doobie,
       "org.tpolecat"                 %% "doobie-hikari"       % doobie,
       "org.http4s"                   %% "http4s-blaze-server" % http4s,
       "org.http4s"                   %% "http4s-circe"        % http4s,
