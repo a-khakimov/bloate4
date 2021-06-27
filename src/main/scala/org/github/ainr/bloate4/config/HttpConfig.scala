@@ -17,5 +17,5 @@ object HttpConfig {
 
   val fromAppConfig: ZLayer[AppConfig, Nothing, HttpConfig] = ZLayer.fromService(_.http)
 
-  val getHttpConfig: URIO[HttpConfig, HttpConfig.Config] = ZIO.access(_.get)
+  val getHttpConfig: URIO[HttpConfig, HttpConfig.Config] = ZIO.service
 }

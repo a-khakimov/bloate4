@@ -1,15 +1,16 @@
-package org.github.ainr.bloate4.repository
+package org.github.ainr.bloate4.repositories
 
 import cats.effect.Blocker
 import doobie.hikari.HikariTransactor
-import doobie.implicits.{toSqlInterpolator, _}
+import doobie.implicits._
 import doobie.util.transactor.Transactor
 import org.flywaydb.core.Flyway
 import org.github.ainr.bloate4.config.DatabaseConfig
 import org.github.ainr.bloate4.config.DatabaseConfig.DatabaseConfig
 import zio.blocking.Blocking
 import zio.interop.catz._
-import zio.{Has, Managed, Task, UIO, URIO, ZIO, ZLayer, ZManaged}
+import zio.logging.Logging
+import zio.{Has, Managed, Task, UIO, ZIO, ZLayer, ZManaged}
 
 object Repo {
   type Repo = Has[Repo.Service]
@@ -21,10 +22,16 @@ object Repo {
     def selectRandomMessage(): UIO[Option[String]]
   }
 
-  case class ServiceImpl(xa: Transactor[Task]) extends Service {
+  object SQL {
+    val insertMessage = (message: String) => sql"INSERT INTO messages (message) VALUES ($message)"
+    val selectRandomMessage = sql"SELECT message FROM messages ORDER BY RANDOM() LIMIT 1"
+  }
+
+  final case class DoobieRepo(xa: Transactor[Task]) extends Service {
 
     override def insertMessage(message: String): Task[Unit] = for {
-      _ <- sql"INSERT INTO messages (messagew) VALUES ($message)"
+      _ <- SQL
+        .insertMessage(message)
         .update
         .withUniqueGeneratedKeys[Long]("id")
         .transact(xa)
@@ -32,7 +39,8 @@ object Repo {
     } yield ()
 
     override def selectRandomMessage(): UIO[Option[String]] = for {
-      message <- sql"SELECT message FROM messages ORDER BY RANDOM() LIMIT 1"
+      message <- SQL
+        .selectRandomMessage
         .query[String]
         .option
         .transact(xa)
@@ -40,7 +48,7 @@ object Repo {
     } yield message
   }
 
-  val live: ZLayer[Blocking with DatabaseConfig, Throwable, Repo] = {
+  val live: ZLayer[Blocking with DatabaseConfig with Logging, Throwable, Repo] = {
     def initDb(cfg: DatabaseConfig.Config): Task[Unit] = {
       Task {
         Flyway
@@ -82,9 +90,7 @@ object Repo {
         cfg <- DatabaseConfig.getDatabaseConfig.toManaged_
         _ <- initDb(cfg).toManaged_
         transactor <- mkTransactor(cfg)
-      } yield ServiceImpl(transactor)
+      } yield DoobieRepo(transactor)
     }
   }
-
-  def repoGet: URIO[Repo, Repo.Service] = ZIO.access(_.get)
 }

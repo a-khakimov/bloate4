@@ -1,7 +1,6 @@
 package org.github.ainr.bloate4.services
 
-import org.github.ainr.bloate4.repository.Repo.Repo
-import zio.logging._
+import org.github.ainr.bloate4.repositories.Repo.Repo
 import zio.{Has, Task, UIO, URIO, ZIO, ZLayer}
 
 object MessagesService {
@@ -28,5 +27,5 @@ object MessagesService {
       }
   }
 
-  val access: URIO[MessagesService with Logging, MessagesService.Service] = ZIO.access(_.get)
+  val service: URIO[MessagesService, MessagesService.Service] = ZIO.service
 }

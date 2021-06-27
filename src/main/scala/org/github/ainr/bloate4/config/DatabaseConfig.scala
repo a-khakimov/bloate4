@@ -21,5 +21,5 @@ object DatabaseConfig {
     ZLayer
       .fromService(appConfig => appConfig.database)
 
-  val getDatabaseConfig: URIO[DatabaseConfig, DatabaseConfig.Config] = ZIO.access(_.get)
+  val getDatabaseConfig: URIO[DatabaseConfig, DatabaseConfig.Config] = ZIO.service
 }
