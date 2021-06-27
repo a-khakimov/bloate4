@@ -15,24 +15,20 @@ object Repo {
   type Repo = Has[Repo.Service]
 
   trait Service {
-    def get: UIO[Option[Int]]
 
-    def insertMessage(message: String): UIO[Unit]
+    def insertMessage(message: String): Task[Unit]
 
     def selectRandomMessage(): UIO[Option[String]]
   }
 
   case class ServiceImpl(xa: Transactor[Task]) extends Service {
-    override def get: UIO[Option[Int]] = for {
-      n <- sql"select 42".query[Int].option.transact(xa).orDie
-    } yield n
 
-    override def insertMessage(message: String): UIO[Unit] = for {
-      _ <- sql"INSERT INTO messages (message) VALUES ($message)"
+    override def insertMessage(message: String): Task[Unit] = for {
+      _ <- sql"INSERT INTO messages (messagew) VALUES ($message)"
         .update
         .withUniqueGeneratedKeys[Long]("id")
         .transact(xa)
-        .orDie
+        .foldM(error => Task.fail(error), _ => Task.succeed(()))
     } yield ()
 
     override def selectRandomMessage(): UIO[Option[String]] = for {

@@ -26,6 +26,7 @@ object Dependencies {
       "org.apache.logging.log4j"      % "log4j-api"           % log4j,
       "org.apache.logging.log4j"      % "log4j-core"          % log4j,
       "org.apache.logging.log4j"      % "log4j-slf4j-impl"    % log4j,
+      "ch.qos.logback"                % "logback-classic"     % "1.1.3",
       "io.circe"                     %% "circe-core"          % circe,
       "io.circe"                     %% "circe-generic"       % circe,
       "dev.zio"                      %% "zio-interop-cats"    % zioInteropCats,
