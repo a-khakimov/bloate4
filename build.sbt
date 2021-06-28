@@ -20,5 +20,5 @@ lazy val root = (project in file("."))
   .settings(
     name := "bloate4",
     libraryDependencies ++= Dependencies.App,
-    scalacOptions in ThisBuild := Options.scalacOptions(scalaVersion.value, isSnapshot.value)
+    Compile / scalacOptions := Options.scalacOptions(scalaVersion.value, isSnapshot.value)
   )

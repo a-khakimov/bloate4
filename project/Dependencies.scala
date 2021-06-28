@@ -13,6 +13,8 @@ object Dependencies {
     val zioLogging       = "0.5.8"
     val log4j            = "2.14.1"
     val circe            = "0.13.0"
+    val logbackClassic   = "1.2.3"
+    val scalaLogging     = "3.9.3"
   }
 
   import Versions._
@@ -23,15 +25,11 @@ object Dependencies {
       "dev.zio"                      %% "zio-test-sbt"        % zio   % "test",
       "dev.zio"                      %% "zio-test"            % zio   % "test",
       "dev.zio"                      %% "zio"                 % zio,
-      "org.apache.logging.log4j"      % "log4j-api"           % log4j,
-      "org.apache.logging.log4j"      % "log4j-core"          % log4j,
-      "org.apache.logging.log4j"      % "log4j-slf4j-impl"    % log4j,
-      "ch.qos.logback"                % "logback-classic"     % "1.1.3",
       "io.circe"                     %% "circe-core"          % circe,
       "io.circe"                     %% "circe-generic"       % circe,
       "dev.zio"                      %% "zio-interop-cats"    % zioInteropCats,
-      "dev.zio"                      %% "zio-logging-slf4j"   % zioLogging,
-      "dev.zio"                      %% "zio-logging"         % zioLogging,
+      "ch.qos.logback"                % "logback-classic"     % logbackClassic,
+      "com.typesafe.scala-logging"   %% "scala-logging"       % scalaLogging,
       "org.tpolecat"                 %% "doobie-core"         % doobie,
       "org.tpolecat"                 %% "doobie-h2"           % doobie,
       "org.tpolecat"                 %% "doobie-postgres"     % doobie,

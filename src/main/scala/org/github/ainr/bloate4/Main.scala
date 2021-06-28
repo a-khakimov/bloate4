@@ -1,31 +1,30 @@
 package org.github.ainr.bloate4
 
 import cats.data.Kleisli
+import com.typesafe.scalalogging.LazyLogging
 import org.github.ainr.bloate4.config.AppConfig.AppConfig
 import org.github.ainr.bloate4.config.{AppConfig, DatabaseConfig}
 import org.github.ainr.bloate4.http.Handler
 import org.github.ainr.bloate4.http.Handler.Handler
 import org.github.ainr.bloate4.repositories.Repo
-import org.github.ainr.bloate4.services.MessagesService
+import org.github.ainr.bloate4.services.{HealthCheckService, MessagesService}
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{Request, Response}
 import zio.blocking.Blocking
 import zio.clock._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
-import zio.logging.Logging
-import zio.logging.slf4j.Slf4jLogger
 import zio.magic._
-import zio.{ExitCode, Task, URIO, ZIO, logging}
+import zio.{ExitCode, Task, URIO, ZIO}
 
 
-object Main extends zio.App {
+object Main extends zio.App with LazyLogging {
 
-  val program: ZIO[Clock with Handler with Logging with AppConfig, Throwable, ExitCode] = for {
-    _ <- logging.log.info(s"Welcome to bloate4!")
+  val program: ZIO[Clock with Handler with AppConfig, Throwable, ExitCode] = for {
+    _ <- ZIO.succeed(logger.info(s"Welcome to bloate4!"))
     config <- AppConfig.getAppConfig
-    _ <- logging.log.info(s"Http configs - ${config.http}")
-    _ <- logging.log.info(s"Database configs - ${config.database}")
+    _ <- ZIO.succeed(logger.info(s"Http configs - ${config.http}"))
+    _ <- ZIO.succeed(logger.info(s"Database configs - ${config.database}"))
     handler <- Handler.service
     httpApp = handler.routes()
     _ <- runHttp(httpApp, config.http.port)
@@ -34,12 +33,12 @@ object Main extends zio.App {
   def run(args: List[String]): URIO[zio.ZEnv, zio.ExitCode] = {
     program
       .inject(
-        Slf4jLogger.make((_, msg) => msg),
         Blocking.live,
         Clock.live,
         AppConfig.live,
         DatabaseConfig.fromAppConfig,
         MessagesService.live,
+        HealthCheckService.live,
         Handler.live,
         Repo.live)
       .exitCode

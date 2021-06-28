@@ -9,7 +9,6 @@ import org.github.ainr.bloate4.config.DatabaseConfig
 import org.github.ainr.bloate4.config.DatabaseConfig.DatabaseConfig
 import zio.blocking.Blocking
 import zio.interop.catz._
-import zio.logging.Logging
 import zio.{Has, Managed, Task, UIO, ZIO, ZLayer, ZManaged}
 
 object Repo {
@@ -48,7 +47,7 @@ object Repo {
     } yield message
   }
 
-  val live: ZLayer[Blocking with DatabaseConfig with Logging, Throwable, Repo] = {
+  val live: ZLayer[Blocking with DatabaseConfig, Throwable, Repo] = {
     def initDb(cfg: DatabaseConfig.Config): Task[Unit] = {
       Task {
         Flyway
