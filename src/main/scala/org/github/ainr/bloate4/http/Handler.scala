@@ -64,9 +64,7 @@ object Handler {
         }
         response
       }
-      case GET -> Root / "health_check" => {
-        Ok(healthCheck())
-      }
+      case GET -> Root / "health_check" => Ok(healthCheck())
     }.orNotFound
   }
 
