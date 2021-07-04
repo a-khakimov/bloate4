@@ -1,14 +1,15 @@
 package org.github.ainr.bloate4.repositories
 
-import cats.effect.Blocker
+import cats.effect.{Blocker, Concurrent, Sync}
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import fetch.{Data, DataSource, Fetch}
 import org.flywaydb.core.Flyway
 import org.github.ainr.bloate4.config.DatabaseConfig
 import org.github.ainr.bloate4.config.DatabaseConfig.DatabaseConfig
 import zio.blocking.Blocking
-import zio.interop.catz._
+//import zio.interop.catz._
 import zio.{Has, Managed, Task, UIO, ZIO, ZLayer, ZManaged}
 
 object Repo {
