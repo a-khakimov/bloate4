@@ -22,6 +22,7 @@ object Dependencies {
   val App =
     List(
       "org.typelevel"                %% "cats-effect"         % cats_effect,
+      "org.typelevel"                %% "cats-core"           % "2.1.1",
       "com.47deg"                    %% "fetch"               % fetch,
       "com.github.blemale"           %% "scaffeine"           % scaffeine,
       "com.github.pureconfig"        %% "pureconfig"          % pureConfig,
@@ -36,7 +37,6 @@ object Dependencies {
       "org.http4s"                   %% "http4s-blaze-server" % http4s,
       "org.http4s"                   %% "http4s-circe"        % http4s,
       "org.http4s"                   %% "http4s-dsl"          % http4s,
-      "org.flywaydb"                  % "flyway-core"         % flyway,
-      compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
+      "org.flywaydb"                  % "flyway-core"         % flyway
     )
 }
