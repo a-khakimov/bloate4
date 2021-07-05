@@ -1,31 +1,21 @@
 package org.github.ainr.bloate4.services
 
-import org.github.ainr.bloate4.repositories.Repo.Repo
-import zio.{Has, Task, UIO, URIO, ZIO, ZLayer}
+import org.github.ainr.bloate4.repositories.MessagesRepo
 
-object MessagesService {
-  type MessagesService = Has[MessagesService.Service]
+trait MessagesService[F[_]] {
 
-  trait Service {
-    def saveMessage(message: String): Task[Unit]
+  def saveMessage(message: String): F[Unit]
 
-    def getRandomMessage(): UIO[Option[String]]
+  def getRandomMessage: F[Option[String]]
+}
+
+final class MessagesServiceImpl[F[_]](repo: MessagesRepo[F]) extends MessagesService[F] {
+
+  override def saveMessage(message: String): F[Unit] = {
+    repo.insertMessage(message)
   }
 
-  val live: ZLayer[Repo, Throwable, MessagesService] = ZLayer.fromService {
-    repo =>
-      new Service {
-        override def saveMessage(message: String): Task[Unit] = {
-          repo
-            .insertMessage(message)
-        }
-
-        override def getRandomMessage(): UIO[Option[String]] = {
-          repo
-            .selectRandomMessage()
-        }
-      }
+  override def getRandomMessage: F[Option[String]] = {
+    repo.selectRandomMessage()
   }
-
-  val service: URIO[MessagesService, MessagesService.Service] = ZIO.service
 }

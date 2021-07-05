@@ -4,20 +4,10 @@ object Options {
 
   def scalacOptions(scalaVersion: String, optimize: Boolean): Seq[String] = {
     val baseOptions = Seq(
-      "-feature",
       "-deprecation",
-      "-explaintypes",
-      "-unchecked",
-      "-encoding",
-      "UTF-8",
-      "-language:higherKinds",
-      "-language:existentials",
-      "-Xfatal-warnings",
-      "-Xlint:-byname-implicit,_",
-      "-Ywarn-value-discard",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-extra-implicit",
-      "-Ywarn-unused"
+      "-feature",
+      "-Ymacro-annotations",
+      "-Xsource:3"
     )
 
     val optimizeOptions =

@@ -1,25 +1,19 @@
 package org.github.ainr.bloate4.http
 
+import cats.{Defer, Monad}
 import cats.data.Kleisli
 import com.typesafe.scalalogging.LazyLogging
 import io.circe._
 import io.circe.generic.semiauto._
-import org.github.ainr.bloate4.services.HealthCheckService.Service.live.healthCheck
-import org.github.ainr.bloate4.services.HealthCheckService.{HealthCheckData, HealthCheckService}
-import org.github.ainr.bloate4.services.MessagesService
-import org.github.ainr.bloate4.services.MessagesService.MessagesService
+import org.github.ainr.bloate4.services.HealthCheckService.HealthCheckData
 import org.http4s._
-import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.implicits._
-import zio._
-import zio.interop.catz._
+import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 
 object Handler {
-  type Handler = Has[Handler.Service]
 
-  trait Service {
-    def routes(): Kleisli[Task, Request[Task], Response[Task]]
+  trait Service[F[_]] {
+    def routes(): Kleisli[F, Request[F], Response[F]]
   }
 
   type Message = String
@@ -34,44 +28,21 @@ object Handler {
 
   implicit val messageResponseEncoder: Encoder[MessageResponse] = deriveEncoder
 
-  final class ServiceImpl(
-    messagesService: MessagesService.Service
-  ) extends Service with LazyLogging {
+  final class ServiceImpl[F[_]: Monad : Defer]() extends Service[F] with LazyLogging {
 
-    object dsl extends Http4sDsl[Task]
+    object dsl extends Http4sDsl[F]
     import dsl._
 
-    override def routes(): Kleisli[Task, Request[Task], Response[Task]] = HttpRoutes.of[Task] {
+    override def routes(): Kleisli[F, Request[F], Response[F]] = HttpRoutes.of[F] {
       case GET -> Root / "get_random_message" => {
-        val response = for {
-          message <- messagesService.getRandomMessage() <* ZIO.succeed(logger.info(s"Get random message request"))
-        } yield MessageResponse(message)
-        Ok(response)
+        Ok()
       }
-      case request @ POST -> Root / "save_message" => {
-        val response = request.decode[SaveMessageRequest] { req =>
-          if (req.message.length > 20)
-            PayloadTooLarge()
-          else
-            messagesService
-              .saveMessage(req.message)
-              .foldM(cause => {
-                logger.error(s"Message saving error", cause)
-                NoContent()
-              },
-                Created(_)
-              )
-        }
-        response
+      case _ @ POST -> Root / "save_message" => {
+        Ok()
       }
-      case GET -> Root / "health_check" => Ok(healthCheck())
+      case GET -> Root / "health_check" => {
+        Ok()
+      }
     }.orNotFound
   }
-
-  val live: ZLayer[MessagesService with HealthCheckService, Throwable, Handler] =
-    ZLayer.fromService( messagesService =>
-      new ServiceImpl(messagesService)
-    )
-
-  def service: URIO[Handler, Handler.Service] = ZIO.service
 }

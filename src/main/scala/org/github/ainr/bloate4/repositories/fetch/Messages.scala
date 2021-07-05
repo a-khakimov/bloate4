@@ -2,7 +2,6 @@ package org.github.ainr.bloate4.repositories.fetch
 
 import cats.effect.Concurrent
 import fetch.{Data, DataSource}
-import org.github.ainr.bloate4.repositories.Repo
 
 
 object Messages extends Data[Int, String] {
@@ -13,8 +12,8 @@ object Messages extends Data[Int, String] {
 
     override def data: Data[Int, String] = Messages
 
-    override implicit def CF: Concurrent[F] = Concurrent[F]
+    override implicit def CF: Concurrent[F] = ???
 
-    override def fetch(id: Int): F[Option[String]] = Repo.Service
+    override def fetch(id: Int): F[Option[String]] = ???
   }
 }

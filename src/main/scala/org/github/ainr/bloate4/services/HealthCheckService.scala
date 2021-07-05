@@ -1,27 +1,18 @@
 package org.github.ainr.bloate4.services
 
-import zio.{Has, Task, UIO, URIO, ZIO, ZLayer}
+import cats.Applicative
+import cats.implicits.catsSyntaxApplicativeId
+import org.github.ainr.bloate4.services.HealthCheckService.HealthCheckData
+
+trait HealthCheckService[F[_]] {
+  def healthCheck(): F[HealthCheckData]
+}
+
+final class HealthCheckServiceImpl[F[_]: Applicative] extends HealthCheckService[F] {
+  override def healthCheck(): F[HealthCheckData] =
+    HealthCheckData("Hello, my little pony!").pure[F]
+}
 
 object HealthCheckService {
-  type HealthCheckService = Has[HealthCheckService.Service]
-
   case class HealthCheckData(message: String)
-
-  trait Service {
-    def healthCheck(): UIO[HealthCheckData]
-  }
-
-  object Service {
-    val live: Service = new Service() {
-      override def healthCheck(): UIO[HealthCheckData] =
-        Task
-          .succeed(
-            HealthCheckData("Hello, my little pony!")
-          )
-    }
-  }
-
-  val live: ZLayer[Any, Throwable, HealthCheckService] = ZLayer.succeed(HealthCheckService.Service.live)
-
-  def access: URIO[HealthCheckService, HealthCheckService.Service] = ZIO.service
 }

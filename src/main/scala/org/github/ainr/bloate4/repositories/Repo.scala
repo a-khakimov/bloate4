@@ -1,96 +1,47 @@
 package org.github.ainr.bloate4.repositories
 
-import cats.effect.{Blocker, Concurrent, Sync}
-import doobie.hikari.HikariTransactor
+import cats.effect.Bracket
+import doobie.Transactor
 import doobie.implicits._
-import doobie.util.transactor.Transactor
-import fetch.{Data, DataSource, Fetch}
-import org.flywaydb.core.Flyway
-import org.github.ainr.bloate4.config.DatabaseConfig
-import org.github.ainr.bloate4.config.DatabaseConfig.DatabaseConfig
-import zio.blocking.Blocking
-//import zio.interop.catz._
-import zio.{Has, Managed, Task, UIO, ZIO, ZLayer, ZManaged}
+import doobie.util.fragment
 
-object Repo {
-  type Repo = Has[Repo.Service]
+trait MessagesRepo[F[_]] {
 
-  trait Service {
+  def insertMessage(message: String): F[Unit]
 
-    def insertMessage(message: String): Task[Unit]
+  def selectRandomMessage(): F[Option[String]]
+}
 
-    def selectRandomMessage(): UIO[Option[String]]
+object SQL {
+  def insertMessage(message: String): fragment.Fragment = {
+    sql"""
+        |INSERT INTO messages (message) VALUES ($message)
+       """
+      .stripMargin
   }
-
-  object SQL {
-    val insertMessage = (message: String) => sql"INSERT INTO messages (message) VALUES ($message)"
-    val selectRandomMessage = sql"SELECT message FROM messages ORDER BY RANDOM() LIMIT 1"
+  def selectRandomMessage: fragment.Fragment = {
+    sql"""SELECT message FROM messages ORDER BY RANDOM() LIMIT 1"""
   }
+}
 
-  final case class DoobieRepo(xa: Transactor[Task]) extends Service {
+class MessagesRepoDoobieImpl[F[_]: Bracket[*[_], Throwable]](
+  xa: Transactor[F]
+) extends MessagesRepo[F] {
 
-    override def insertMessage(message: String): Task[Unit] = for {
-      _ <- SQL
-        .insertMessage(message)
+  override def insertMessage(message: String): F[Unit] = {
+
+    val _ =
+      SQL
+      .insertMessage(message)
         .update
         .withUniqueGeneratedKeys[Long]("id")
-        .transact(xa)
-        .foldM(error => Task.fail(error), _ => Task.succeed(()))
-    } yield ()
+        .attemptSqlState
+      .transact(xa)
 
-    override def selectRandomMessage(): UIO[Option[String]] = for {
-      message <- SQL
-        .selectRandomMessage
-        .query[String]
-        .option
-        .transact(xa)
-        .orDie
-    } yield message
+    ???
   }
 
-  val live: ZLayer[Blocking with DatabaseConfig, Throwable, Repo] = {
-    def initDb(cfg: DatabaseConfig.Config): Task[Unit] = {
-      Task {
-        Flyway
-          .configure()
-          .dataSource(cfg.url, cfg.user, cfg.password)
-          .load()
-          .migrate()
-      }.unit
-    }
-
-    def mkTransactor(
-      cfg: DatabaseConfig.Config
-    ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] = {
-      ZIO.runtime[Blocking].toManaged_.flatMap { implicit rt =>
-        for {
-          transactEC <- Managed.succeed(
-            rt.environment
-              .get[Blocking.Service]
-              .blockingExecutor
-              .asEC
-          )
-          connectEC = rt.platform.executor.asEC
-          transactor <- HikariTransactor
-            .newHikariTransactor[Task](
-              cfg.driver,
-              cfg.url,
-              cfg.user,
-              cfg.password,
-              connectEC,
-              Blocker.liftExecutionContext(transactEC)
-            )
-            .toManaged
-        } yield transactor
-      }
-    }
-
-    ZLayer.fromManaged {
-      for {
-        cfg <- DatabaseConfig.getDatabaseConfig.toManaged_
-        _ <- initDb(cfg).toManaged_
-        transactor <- mkTransactor(cfg)
-      } yield DoobieRepo(transactor)
-    }
+  override def selectRandomMessage(): F[Option[String]] = {
+    ???
   }
 }
