@@ -22,8 +22,9 @@ object Dependencies {
   val App =
     List(
       "org.typelevel"                %% "cats-effect"         % cats_effect,
-      "org.typelevel"                %% "cats-core"           % "2.1.1",
+      "org.typelevel"                %% "cats-core"           % "2.3.0",
       "com.47deg"                    %% "fetch"               % fetch,
+      "com.47deg"                    %% "fetch-debug"         % fetch,
       "com.github.blemale"           %% "scaffeine"           % scaffeine,
       "com.github.pureconfig"        %% "pureconfig"          % pureConfig,
       "io.circe"                     %% "circe-core"          % circe,
