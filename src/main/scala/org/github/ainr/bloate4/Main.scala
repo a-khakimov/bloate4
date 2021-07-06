@@ -21,6 +21,7 @@ object Main extends IOApp with LazyLogging {
       config <- AppConfig.load[IO]
       _ <- logger.info(s"${config.http}").pure[IO]
       _ <- logger.info(s"${config.database}").pure[IO]
+      _ <- db.migrate[IO](config.database)
       _ <- resources[IO](config).use {
         case (ec, transactor) => {
           val repo: MessagesRepo[IO] = new MessagesRepoDoobieImpl(transactor)

@@ -12,7 +12,7 @@ trait MessagesService[F[_]] {
   def getRandomMessage(): F[Option[Message]]
 }
 
-final class MessagesServiceImpl[F[_]: Monad](
+final class MessagesServiceImpl[F[_] : Monad](
   repo: MessagesRepo[F]
 ) extends MessagesService[F] {
 
