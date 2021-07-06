@@ -29,6 +29,7 @@ object Dependencies {
       "io.circe"                     %% "circe-core"          % circe,
       "io.circe"                     %% "circe-generic"       % circe,
       "io.circe"                     %% "circe-parser"        % circe,
+      "io.estatico"                  %% "newtype"             % "0.4.4",
       "ch.qos.logback"                % "logback-classic"     % logbackClassic,
       "com.typesafe.scala-logging"   %% "scala-logging"       % scalaLogging,
       "org.tpolecat"                 %% "doobie-core"         % doobie,

@@ -1,8 +1,8 @@
-package org.github.ainr.bloate4.services
+package org.github.ainr.bloate4.services.healthcheck
 
 import cats.Applicative
 import cats.implicits.catsSyntaxApplicativeId
-import org.github.ainr.bloate4.services.HealthCheckService.HealthCheckData
+import org.github.ainr.bloate4.services.healthcheck.HealthCheckService.HealthCheckData
 
 trait HealthCheckService[F[_]] {
   def healthCheck(): F[HealthCheckData]

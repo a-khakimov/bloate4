@@ -8,7 +8,7 @@ import doobie.util.ExecutionContexts
 import org.github.ainr.bloate4.config.AppConfig
 import org.github.ainr.bloate4.http.HandlerImpl
 import org.github.ainr.bloate4.repositories.{MessagesRepo, MessagesRepoDoobieImpl}
-import org.github.ainr.bloate4.services.{MessagesService, MessagesServiceImpl}
+import org.github.ainr.bloate4.services.messages.{MessagesService, MessagesServiceImpl}
 
 import scala.concurrent.ExecutionContext
 

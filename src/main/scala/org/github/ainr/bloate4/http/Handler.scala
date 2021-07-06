@@ -1,32 +1,29 @@
 package org.github.ainr.bloate4.http
 
 import cats.data.Kleisli
+import cats.effect.Sync
 import cats.syntax.all._
-import cats.{Defer, Monad, MonadError}
+import cats.{Defer, Monad}
 import com.typesafe.scalalogging.LazyLogging
-import org.http4s._
-import org.http4s.implicits._
+import io.circe.generic.auto._
+import io.circe.syntax._
+import org.github.ainr.bloate4.http.HandlerImpl.{MessageResponse, SaveMessageRequest, SaveMessageResponse}
+import org.github.ainr.bloate4.services.messages.MessagesService
+import org.github.ainr.bloate4.services.messages.domain.Message
+import org.http4s.{HttpRoutes, Request, Response}
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import io.circe._
-import io.circe.syntax._
-import io.circe.generic.auto._
-import org.github.ainr.bloate4.services.MessagesService
-
-import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder}
+import org.http4s.implicits._
 
 
   trait Handler[F[_]] {
     def routes(): Kleisli[F, Request[F], Response[F]]
   }
 
-  final class HandlerImpl[F[_]: Monad : Defer](
+  final class HandlerImpl[F[_]: Sync:  Monad : Defer](
     messagesService: MessagesService[F]
   ) extends Handler[F] with LazyLogging {
-
-    type Message = String
-    final case class SaveMessageRequest(message: Message)
-    final case class MessageResponse(message: Message)
 
     object dsl extends Http4sDsl[F]
     import dsl._
@@ -39,10 +36,12 @@ import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder
         } yield result
       }
       case request @ POST -> Root / "save_message" => {
-        for {
-          v <- request.as[SaveMessageRequest]
-          r <- messagesService.saveMessage(v.message)
-        } yield r
+        val c = for {
+          v <- request.decodeJson[SaveMessageRequest]
+          _ <- messagesService.saveMessage(v.message)
+          response = SaveMessageResponse("Ok")
+        } yield response
+        Ok(c)
       }
       case GET -> Root / "health_check" => {
         Ok("hui")
@@ -52,4 +51,13 @@ import org.http4s.circe.CirceEntityCodec.{circeEntityDecoder, circeEntityEncoder
       }
     }.orNotFound
   }
+
+object HandlerImpl {
+
+  final case class SaveMessageRequest(message: Message)
+  final case class SaveMessageResponse(result: String)
+
+  final case class MessageResponse(message: Message)
+
+}
 
