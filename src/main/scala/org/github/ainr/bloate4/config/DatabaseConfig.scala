@@ -11,7 +11,7 @@ object DatabaseConfig {
     user: String,
     password: String
   ) {
-    override def toString: String = s"url[$url] driver[$driver] user[$user] password[****]"
+    override def toString: String = s"Database configuration: url[$url] driver[$driver] user[$user] password[****]"
   }
 
   implicit val convert: ConfigConvert[Config] = deriveConvert

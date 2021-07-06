@@ -6,16 +6,18 @@ trait MessagesService[F[_]] {
 
   def saveMessage(message: String): F[Unit]
 
-  def getRandomMessage: F[Option[String]]
+  def getRandomMessage(): F[Option[String]]
 }
 
-final class MessagesServiceImpl[F[_]](repo: MessagesRepo[F]) extends MessagesService[F] {
+final class MessagesServiceImpl[F[_]](
+  repo: MessagesRepo[F]
+) extends MessagesService[F] {
 
   override def saveMessage(message: String): F[Unit] = {
     repo.insertMessage(message)
   }
 
-  override def getRandomMessage: F[Option[String]] = {
+  override def getRandomMessage(): F[Option[String]] = {
     repo.selectRandomMessage()
   }
 }

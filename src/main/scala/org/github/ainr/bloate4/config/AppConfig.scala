@@ -1,6 +1,8 @@
 package org.github.ainr.bloate4.config
 
-import pureconfig.ConfigReader.Result
+import cats.effect.Sync
+import cats.syntax.all._
+import pureconfig.error.ConfigReaderException
 import pureconfig.generic.semiauto.deriveConvert
 import pureconfig.{ConfigConvert, ConfigSource}
 
@@ -13,5 +15,16 @@ object AppConfig {
 
   implicit private val convert: ConfigConvert[Config] = deriveConvert
 
-  def load: Result[Config] = ConfigSource.default.load[Config]
+  def load[F[_]: Sync]: F[Config] = {
+    Sync[F]
+      .delay {
+        ConfigSource
+          .default
+          .load[Config]
+      }
+      .flatMap {
+        case Left(e) => Sync[F].raiseError(new ConfigReaderException[Config](e))
+        case Right(config) => Sync[F].pure(config)
+      }
+  }
 }
