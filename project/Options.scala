@@ -7,6 +7,11 @@ object Options {
       "-deprecation",
       "-feature",
       "-Ymacro-annotations",
+      "-Xfatal-warnings",
+      "-Ywarn-value-discard",
+      "-Ywarn-numeric-widen",
+      "-Ywarn-extra-implicit",
+      "-Ywarn-unused",
       "-Xsource:3"
     )
 

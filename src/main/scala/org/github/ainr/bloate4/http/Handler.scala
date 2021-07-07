@@ -3,25 +3,24 @@ package org.github.ainr.bloate4.http
 import cats.data.Kleisli
 import cats.effect.Sync
 import cats.syntax.all._
-import cats.{Defer, Monad}
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.github.ainr.bloate4.http.HandlerImpl.{MessageResponse, SaveMessageRequest, SaveMessageResponse}
 import org.github.ainr.bloate4.services.messages.MessagesService
 import org.github.ainr.bloate4.services.messages.domain.Message
-import org.http4s.{HttpRoutes, Request, Response}
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits._
+import org.http4s.{HttpRoutes, Request, Response}
 
 
 trait Handler[F[_]] {
   def routes(): Kleisli[F, Request[F], Response[F]]
 }
 
-final class HandlerImpl[F[_] : Sync : Monad : Defer](
+final class HandlerImpl[F[_] : Sync](
   messagesService: MessagesService[F]
 ) extends Handler[F] with LazyLogging {
 

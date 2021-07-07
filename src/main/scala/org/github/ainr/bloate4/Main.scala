@@ -1,12 +1,12 @@
 package org.github.ainr.bloate4
 
-import cats.effect.{Async, Blocker, ContextShift, ExitCode, IO, IOApp, Resource, Sync}
+import cats.effect.{Async, Blocker, ContextShift, ExitCode, IO, IOApp, Resource}
 import cats.implicits.catsSyntaxApplicativeId
 import com.github.blemale.scaffeine.Scaffeine
 import com.typesafe.scalalogging.LazyLogging
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
-import fetch.{Data, DataCache, Fetch}
+import fetch.{Data, DataCache}
 import org.github.ainr.bloate4.config.AppConfig
 import org.github.ainr.bloate4.http.HandlerImpl
 import org.github.ainr.bloate4.repositories.fetch.FetchMessages
@@ -47,6 +47,7 @@ object Main extends IOApp with LazyLogging {
               IO(this)
             }
           }
+
           val repo: MessagesRepo[IO] = new MessagesRepoDoobieImpl(transactor)
           val messagesService: MessagesService[IO] = new MessagesServiceImpl[IO](repo, FetchMessages.source(repo), caffeineCache)
           val handler: http.Handler[IO] = new HandlerImpl[IO](messagesService)
@@ -57,7 +58,7 @@ object Main extends IOApp with LazyLogging {
     } yield ExitCode.Success
   }
 
-  def resources[F[_]: Sync: Async: ContextShift](
+  def resources[F[_]: Async: ContextShift](
     config: AppConfig.Config
   ): Resource[F, (ExecutionContext, HikariTransactor[F])] = {
     for {

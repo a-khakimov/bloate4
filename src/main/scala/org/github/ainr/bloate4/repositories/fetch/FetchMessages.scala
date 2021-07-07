@@ -1,5 +1,6 @@
 package org.github.ainr.bloate4.repositories.fetch
 
+import cats.syntax.all._
 import cats.effect.Concurrent
 import com.typesafe.scalalogging.LazyLogging
 import fetch.{Data, DataSource}
@@ -19,9 +20,8 @@ object FetchMessages extends Data[Int, String] with LazyLogging {
 
     override def CF: Concurrent[F] = Concurrent[F]
 
-    override def fetch(id: Int = 0): F[Option[Message]] = {
-      logger.info("fetch")
-      repo.selectRandomMessage()
+    override def fetch(id: Int): F[Option[Message]] = {
+      repo.selectRandomMessage() <* logger.info(s"Fetch message from repo $id").pure[F]
     }
   }
 }

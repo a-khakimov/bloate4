@@ -1,9 +1,9 @@
 package org.github.ainr.bloate4.services.messages
 
-import cats.Monad
 import cats.effect.{Concurrent, Timer}
 import cats.syntax.all._
-import fetch.{DataCache, DataSource, Fetch, fetchM}
+import com.typesafe.scalalogging.LazyLogging
+import fetch.{DataCache, DataSource, Fetch}
 import org.github.ainr.bloate4.repositories.MessagesRepo
 import org.github.ainr.bloate4.services.messages.domain.Message
 
@@ -14,22 +14,21 @@ trait MessagesService[F[_]] {
   def getRandomMessage(): F[Option[Message]]
 }
 
-final class MessagesServiceImpl[F[_] : Monad: Concurrent: Timer](
+final class MessagesServiceImpl[F[_] : Concurrent: Timer](
   repo: MessagesRepo[F],
   fetchMessage: DataSource[F, Int, Message],
   messagesCache: DataCache[F]
-) extends MessagesService[F] {
+) extends MessagesService[F] with LazyLogging {
 
   override def saveMessage(message: Message): F[Unit] = {
     repo.insertMessage(message)
   }
 
   override def getRandomMessage(): F[Option[Message]] = {
-    val c = for {
-      message <- Fetch.optional(0, fetchMessage)
-      r = message
-    } yield r
-
-    Fetch.run(c, messagesCache)
+    Fetch
+      .run(Fetch.optional(0, fetchMessage), messagesCache)
+      .recoverWith {
+        case error => Option("Error").pure[F] <* logger.error("hui", error).pure[F]
+      }
   }
 }
