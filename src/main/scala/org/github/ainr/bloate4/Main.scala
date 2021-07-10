@@ -2,11 +2,11 @@ package org.github.ainr.bloate4
 
 import cats.effect.{Async, Blocker, ContextShift, ExitCode, IO, IOApp, Resource}
 import cats.implicits.catsSyntaxApplicativeId
-import com.github.blemale.scaffeine.Scaffeine
 import com.typesafe.scalalogging.LazyLogging
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
-import fetch.{Data, DataCache}
+import org.github.ainr.bloate4.cache.MessagesCache.CacheConfig
+import org.github.ainr.bloate4.cache.{MessagesCache, MessagesScaffeineCache}
 import org.github.ainr.bloate4.config.AppConfig
 import org.github.ainr.bloate4.http.HandlerImpl
 import org.github.ainr.bloate4.repositories.fetch.FetchMessages
@@ -29,27 +29,10 @@ object Main extends IOApp with LazyLogging {
       _ <- resources[IO](config).use {
         case (ec, transactor) => {
 
-          val caffeineCache: DataCache[IO] = new DataCache[IO] {
-
-            private val cache =
-              Scaffeine()
-                .recordStats()
-                .expireAfterWrite(10.second)
-                .maximumSize(500)
-                .build[Any, Any]()
-
-            override def lookup[K, V](i: K, data: Data[K, V]): IO[Option[V]] = {
-              IO(cache.getIfPresent(i).map(v => v.asInstanceOf[V]))
-            }
-
-            override def insert[I, A](i: I, v: A, data: Data[I, A]): IO[DataCache[IO]] = {
-              cache.put(i, v)
-              IO(this)
-            }
-          }
-
+          val cacheConfig = CacheConfig(10.second, 500)
+          val messagesCache: MessagesCache[IO] = new MessagesScaffeineCache[IO](cacheConfig)
           val repo: MessagesRepo[IO] = new MessagesRepoDoobieImpl(transactor)
-          val messagesService: MessagesService[IO] = new MessagesServiceImpl[IO](repo, FetchMessages.source(repo), caffeineCache)
+          val messagesService: MessagesService[IO] = new MessagesServiceImpl[IO](repo, FetchMessages.source(repo), messagesCache.make)
           val handler: http.Handler[IO] = new HandlerImpl[IO](messagesService)
 
           http.server(handler.routes())(ec)
