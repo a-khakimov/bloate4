@@ -4,9 +4,11 @@ import cats.effect.Sync
 import cats.syntax.all._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.github.ainr.bloate4.http.HandlerImpl.{MessageResponse, SaveMessageRequest, SaveMessageResponse}
+import org.github.ainr.bloate4.http.Handler.{MessageResponse, SaveMessageRequest}
+import org.github.ainr.bloate4.services.healthcheck.HealthCheckService
 import org.github.ainr.bloate4.services.messages.MessagesService
 import org.github.ainr.bloate4.services.messages.domain.Message
+import org.github.ainr.bloate4.services.version.VersionService
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe._
@@ -16,8 +18,18 @@ trait Handler[F[_]] {
   def routes: HttpRoutes[F]
 }
 
+object Handler {
+
+  final case class SaveMessageRequest(message: Message)
+
+  final case class MessageResponse(message: Message)
+
+}
+
 final class HandlerImpl[F[_] : Sync](
-  messagesService: MessagesService[F]
+  messagesService: MessagesService[F],
+  healthCheckService: HealthCheckService[F],
+  versionService: VersionService[F]
 ) extends Handler[F] {
 
   object dsl extends Http4sDsl[F]
@@ -27,33 +39,23 @@ final class HandlerImpl[F[_] : Sync](
     case GET -> Root / "get_random_message" => {
       for {
         message <- messagesService.getRandomMessage()
-        result <- message.map(m => Ok(MessageResponse(m).asJson)).getOrElse(NotFound())
+        result <- message.map {
+          m => Ok(MessageResponse(m).asJson)
+        }.getOrElse(NotFound())
       } yield result
     }
     case request@POST -> Root / "save_message" => {
-      val c = for {
+      for {
         v <- request.decodeJson[SaveMessageRequest]
-        _ <- messagesService.saveMessage(v.message)
-        response = SaveMessageResponse("Ok")
+        result <- messagesService.saveMessage(v.message)
+        response <- Ok(result.asJson)
       } yield response
-      Ok(c)
     }
     case GET -> Root / "health_check" => {
-      Ok("hui")
+      Ok(healthCheckService.healthCheck().map(_.asJson))
     }
     case GET -> Root / "version" => {
-      Ok("0.0.1")
+      Ok(versionService.version())
     }
   }
 }
-
-object HandlerImpl {
-
-  final case class SaveMessageRequest(message: Message)
-
-  final case class SaveMessageResponse(result: String)
-
-  final case class MessageResponse(message: Message)
-
-}
-

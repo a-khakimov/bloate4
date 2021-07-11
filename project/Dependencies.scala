@@ -15,6 +15,7 @@ object Dependencies {
     val circe            = "0.14.1"
     val logbackClassic   = "1.2.3"
     val scalaLogging     = "3.9.3"
+    val prometheus       = "0.11.0"
   }
 
   import Versions._
@@ -40,6 +41,7 @@ object Dependencies {
       "org.http4s"                   %% "http4s-circe"        % http4s,
       "org.http4s"                   %% "http4s-dsl"          % http4s,
       "org.http4s"                   %% "http4s-prometheus-metrics" % http4s,
-      "org.flywaydb"                  % "flyway-core"         % flyway
+      "org.flywaydb"                  % "flyway-core"         % flyway,
+      "io.prometheus"                 % "simpleclient"        % prometheus
     )
 }

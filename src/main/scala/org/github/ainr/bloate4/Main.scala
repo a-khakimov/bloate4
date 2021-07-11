@@ -8,16 +8,20 @@ import org.github.ainr.bloate4.cache.{MessagesCache, MessagesScaffeineCache}
 import org.github.ainr.bloate4.config.AppConfig
 import org.github.ainr.bloate4.http.HandlerImpl
 import org.github.ainr.bloate4.infrastructure.logging.LazyLogging
-import org.github.ainr.bloate4.infrastructure.logging.interpreters.Logger
+import org.github.ainr.bloate4.infrastructure.logging.interpreters.{Logger, LoggerWithMetrics}
 import org.github.ainr.bloate4.infrastructure.logging.interpreters.Logger.instance
+import org.github.ainr.bloate4.infrastructure.metrics.LoggerCounters
 import org.github.ainr.bloate4.repositories.fetch.FetchMessages
 import org.github.ainr.bloate4.repositories.{MessagesRepo, MessagesRepoDoobieImpl}
+import org.github.ainr.bloate4.services.healthcheck.{HealthCheckService, HealthCheckServiceImpl}
 import org.github.ainr.bloate4.services.messages.{MessagesService, MessagesServiceImpl}
+import org.github.ainr.bloate4.services.version.{VersionService, VersionServiceImpl}
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.metrics.MetricsOps
 import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
 import org.http4s.server.Router
 import org.http4s.server.middleware.Metrics
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
@@ -34,11 +38,20 @@ object Main extends IOApp with LazyLogging {
       _ <- db.migrate[IO](config.database)
       _ <- resources[IO](config).use {
         case (ec, transactor, metricsService, metrics) => {
-          val cacheConfig = CacheConfig(10.second, 500)
+          val cacheConfig = CacheConfig(5.second, 500)
           val messagesCache: MessagesCache[IO] = new MessagesScaffeineCache[IO](cacheConfig)
           val repo: MessagesRepo[IO] = new MessagesRepoDoobieImpl(transactor)
-          val messagesService: MessagesService[IO] = new MessagesServiceImpl[IO](repo, FetchMessages.source(repo), messagesCache.make)
-          val handler: http.Handler[IO] = new HandlerImpl[IO](messagesService)
+          val loggerCounters = LoggerCounters[IO](metricsService.collectorRegistry)
+
+          val healthCheckServiceLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(HealthCheckService.getClass))(loggerCounters)
+          val messagesServiceLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(MessagesService.getClass))(loggerCounters)
+          val versionServiceLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(VersionService.getClass))(loggerCounters)
+
+          val healthCheckService: HealthCheckService[IO] = new HealthCheckServiceImpl[IO](healthCheckServiceLogger)
+          val messagesService: MessagesService[IO] = new MessagesServiceImpl[IO](repo, FetchMessages.source(repo), messagesCache.make)(messagesServiceLogger)
+          val versionService: VersionService[IO] = new VersionServiceImpl[IO](versionServiceLogger)
+
+          val handler: http.Handler[IO] = new HandlerImpl[IO](messagesService, healthCheckService, versionService)
           val router = Router[IO](
             "/api" -> Metrics[IO](metrics)(handler.routes),
             "/" -> metricsService.routes
