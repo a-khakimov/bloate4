@@ -2,7 +2,6 @@ package org.github.ainr.bloate4.repositories
 
 import cats.effect.Bracket
 import cats.syntax.all._
-import com.typesafe.scalalogging.LazyLogging
 import doobie.implicits._
 import doobie.util.fragment
 import doobie.util.transactor.Transactor
@@ -18,7 +17,7 @@ class MessagesRepoDoobieImpl[F[_]](
   xa: Transactor[F]
 )(
   implicit bracket: Bracket[F, Throwable]
-) extends MessagesRepo[F] with LazyLogging {
+) extends MessagesRepo[F] {
 
   override def insertMessage(message: String): F[Unit] = {
     for {

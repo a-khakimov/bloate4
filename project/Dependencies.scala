@@ -32,7 +32,6 @@ object Dependencies {
       "io.circe"                     %% "circe-parser"        % circe,
       "io.estatico"                  %% "newtype"             % "0.4.4",
       "ch.qos.logback"                % "logback-classic"     % logbackClassic,
-      "com.typesafe.scala-logging"   %% "scala-logging"       % scalaLogging,
       "org.tpolecat"                 %% "doobie-core"         % doobie,
       "org.tpolecat"                 %% "doobie-h2"           % doobie,
       "org.tpolecat"                 %% "doobie-postgres"     % doobie,
@@ -40,6 +39,7 @@ object Dependencies {
       "org.http4s"                   %% "http4s-blaze-server" % http4s,
       "org.http4s"                   %% "http4s-circe"        % http4s,
       "org.http4s"                   %% "http4s-dsl"          % http4s,
+      "org.http4s"                   %% "http4s-prometheus-metrics" % http4s,
       "org.flywaydb"                  % "flyway-core"         % flyway
     )
 }
