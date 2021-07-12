@@ -1,4 +1,6 @@
 [![Scala CI](https://github.com/a-khakimov/bloate4/actions/workflows/main.yml/badge.svg)](https://github.com/a-khakimov/bloate4/actions/workflows/main.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bloate4&metric=coverage)](https://sonarcloud.io/dashboard?id=bloate4)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=bloate4&metric=ncloc)](https://sonarcloud.io/dashboard?id=bloate4)
 
 # bloate4
 
