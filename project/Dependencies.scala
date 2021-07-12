@@ -10,7 +10,7 @@ object Dependencies {
     val pureConfig       = "0.16.0"
     val http4s           = "0.21.24"
     val kindProjector    = "0.13.0"
-    val flyway           = "7.8.2"
+    val flyway           = "7.11.1"
     val log4j            = "2.14.1"
     val circe            = "0.14.1"
     val logbackClassic   = "1.2.3"
@@ -42,6 +42,7 @@ object Dependencies {
       "org.http4s"                   %% "http4s-dsl"          % http4s,
       "org.http4s"                   %% "http4s-prometheus-metrics" % http4s,
       "org.flywaydb"                  % "flyway-core"         % flyway,
+      "org.scalatest"                %% "scalatest"           % "3.2.9" % "test",
       "io.prometheus"                 % "simpleclient"        % prometheus
     )
 }

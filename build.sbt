@@ -21,3 +21,5 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Dependencies.App,
     Compile / scalacOptions := Options.scalacOptions(scalaVersion.value, isSnapshot.value)
   )
+
+sonarProperties := Sonar.properties

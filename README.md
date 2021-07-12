@@ -1,3 +1,5 @@
+[![Scala CI](https://github.com/a-khakimov/bloate4/actions/workflows/main.yml/badge.svg)](https://github.com/a-khakimov/bloate4/actions/workflows/main.yml)
+
 # bloate4
 
 * [x] Подрубить к postgres
