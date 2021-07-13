@@ -36,3 +36,12 @@ jobs:
       
     - name: Assembly
       run: sbt "clean; set test in assembly := {}; assembly"
+
+    - name: Deploy to remote
+      uses: garygrossgarten/github-action-scp@release
+      with:
+        local: target/scala-2.13/bloate4-assembly-0.1.jar
+        remote: /home/bloate4/bloate4-assembly-0.1.jar
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
