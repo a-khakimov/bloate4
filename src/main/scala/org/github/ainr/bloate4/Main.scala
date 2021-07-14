@@ -8,8 +8,8 @@ import org.github.ainr.bloate4.cache.{MessagesCache, MessagesScaffeineCache}
 import org.github.ainr.bloate4.config.AppConfig
 import org.github.ainr.bloate4.http.HandlerImpl
 import org.github.ainr.bloate4.infrastructure.logging.LazyLogging
-import org.github.ainr.bloate4.infrastructure.logging.interpreters.{Logger, LoggerWithMetrics}
 import org.github.ainr.bloate4.infrastructure.logging.interpreters.Logger.instance
+import org.github.ainr.bloate4.infrastructure.logging.interpreters.{Logger, LoggerWithMetrics}
 import org.github.ainr.bloate4.infrastructure.metrics.LoggerCounters
 import org.github.ainr.bloate4.repositories.fetch.FetchMessages
 import org.github.ainr.bloate4.repositories.{MessagesRepo, MessagesRepoDoobieImpl}

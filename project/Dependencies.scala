@@ -43,6 +43,7 @@ object Dependencies {
       "org.http4s"                   %% "http4s-prometheus-metrics" % http4s,
       "org.flywaydb"                  % "flyway-core"         % flyway,
       "org.scalatest"                %% "scalatest"           % "3.2.9" % "test",
-      "io.prometheus"                 % "simpleclient"        % prometheus
+      "io.prometheus"                 % "simpleclient"        % prometheus,
+      "org.reactormonk"              %% "cryptobits"          % "1.3"
     )
 }
