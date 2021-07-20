@@ -11,10 +11,10 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
+        username: ${{ secrets.SSH_USER2 }}
+        password: ${{ secrets.SSH_PASSWORD2 }}
         
         script: |
-          sudo cp ~/builds/bloate4-assembly-0.1.jar ~/
-          sudo systemctl status bloate4.service
+          cp /home/bloate4/builds/bloate4-assembly-0.1.jar /home/bloate4/
+          systemctl status bloate4.service
           
