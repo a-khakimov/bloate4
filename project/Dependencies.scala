@@ -42,7 +42,9 @@ object Dependencies {
       "org.http4s"                   %% "http4s-dsl"          % http4s,
       "org.http4s"                   %% "http4s-prometheus-metrics" % http4s,
       "org.flywaydb"                  % "flyway-core"         % flyway,
-      "org.scalatest"                %% "scalatest"           % "3.2.9" % "test",
+      "org.typelevel"                %% "cats-effect-testing-scalatest" % "1.1.1" % Test,
+      "org.scalatest"                %% "scalatest"           % "3.2.9" % Test,
+      "org.scalamock"                %% "scalamock"           % "5.1.0" % Test,
       "io.prometheus"                 % "simpleclient"        % prometheus
     )
 }
