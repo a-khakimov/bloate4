@@ -62,9 +62,9 @@ final class MessagesServiceImpl[F[_]: Concurrent: Timer](
   private def saveMessageErrorHandler(error: Throwable): F[MessageSavingResult] = {
     error match {
       case e: TooLongMessageError.type => MessageSavingResult("Слишком длинное сообщение").pure[F] <*
-        logger.error("save_message_error_too_short", "Save message error", e)
-      case e: TooShortMessageError.type => MessageSavingResult("Слишком короткое сообщение").pure[F] <*
         logger.error("save_message_error_too_long", "Save message error", e)
+      case e: TooShortMessageError.type => MessageSavingResult("Слишком короткое сообщение").pure[F] <*
+        logger.error("save_message_error_too_short", "Save message error", e)
       case e: MessageSymbolsValidationError.type => MessageSavingResult("Сообщение содержит недопустимые символы").pure[F] <*
         logger.error("save_message_error_validation", "Save message error", e)
       case e => MessageSavingResult("Сообщение не отправлено").pure[F] <*
@@ -73,6 +73,7 @@ final class MessagesServiceImpl[F[_]: Concurrent: Timer](
   }
 
   // TODO: Тут лучше заюзать мощь кошачьего валидатора
+  //  А еще лучше заюзать refined
   private def validateMessage(message: Message): F[Message] = {
     val len = message.length
     if (len < minMessageLength) Sync[F].raiseError(TooShortMessageError)
