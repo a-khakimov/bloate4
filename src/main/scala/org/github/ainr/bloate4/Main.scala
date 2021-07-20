@@ -40,13 +40,15 @@ object Main extends IOApp with LazyLogging {
         case (ec, transactor, metricsService, metrics) => {
           val cacheConfig = CacheConfig(5.second, 500)
           val messagesCache: MessagesCache[IO] = new MessagesScaffeineCache[IO](cacheConfig)
-          val repo: MessagesRepo[IO] = new MessagesRepoDoobieImpl(transactor)
+
           val loggerCounters = LoggerCounters[IO](metricsService.collectorRegistry)
 
           val healthCheckServiceLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(HealthCheckService.getClass))(loggerCounters)
           val messagesServiceLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(MessagesService.getClass))(loggerCounters)
           val versionServiceLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(VersionService.getClass))(loggerCounters)
+          val messagesRepoLogger = new LoggerWithMetrics[IO](LoggerFactory.getLogger(MessagesRepo.getClass))(loggerCounters)
 
+          val repo: MessagesRepo[IO] = new MessagesRepoDoobieImpl(transactor)(messagesRepoLogger)
           val healthCheckService: HealthCheckService[IO] = new HealthCheckServiceImpl[IO](healthCheckServiceLogger)
           val messagesService: MessagesService[IO] = new MessagesServiceImpl[IO](repo, FetchMessages.source(repo), messagesCache.make)(messagesServiceLogger)
           val versionService: VersionService[IO] = new VersionServiceImpl[IO](versionServiceLogger)

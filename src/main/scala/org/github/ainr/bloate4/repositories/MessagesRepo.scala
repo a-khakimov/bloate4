@@ -5,6 +5,7 @@ import cats.syntax.all._
 import doobie.implicits._
 import doobie.util.fragment
 import doobie.util.transactor.Transactor
+import org.github.ainr.bloate4.infrastructure.logging.{Labels, Logger}
 
 trait MessagesRepo[F[_]] {
 
@@ -13,8 +14,14 @@ trait MessagesRepo[F[_]] {
   def selectRandomMessage(): F[Option[String]]
 }
 
+object MessagesRepo {
+
+}
+
 class MessagesRepoDoobieImpl[F[_]](
   xa: Transactor[F]
+)(
+  logger: Logger[F] with Labels[F]
 )(
   implicit bracket: Bracket[F, Throwable]
 ) extends MessagesRepo[F] {
@@ -35,7 +42,7 @@ class MessagesRepoDoobieImpl[F[_]](
         .selectRandomMessage
         .query[String]
         .option
-        .transact(xa)
+        .transact(xa) <* logger.info("get_random_message_DB", "Get random message from DB")
     } yield message
   }
 }
