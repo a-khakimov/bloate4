@@ -6,13 +6,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    
     - name: Release
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
+        
         script: |
-          cp ~/builds/bloate4-assembly-0.1.jar ~/
+          sudo cp ~/builds/bloate4-assembly-0.1.jar ~/
           sudo systemctl status bloate4.service
           
