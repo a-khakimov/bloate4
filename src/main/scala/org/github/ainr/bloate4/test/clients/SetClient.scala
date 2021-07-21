@@ -2,7 +2,7 @@ package org.github.ainr.bloate4.test.clients
 
 import cats.Applicative
 import cats.effect.{BracketThrow, ExitCode, IO, IOApp, Resource}
-import cats.implicits.catsSyntaxApplicativeId
+import cats.syntax.all._
 import io.circe.generic.auto._
 import io.circe.syntax.EncoderOps
 import org.http4s.Status.Successful
@@ -14,7 +14,6 @@ import org.http4s.{Method, Request, Uri}
 import java.util.Random
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
 import scala.util.Random.javaRandomToRandom
 
 private[clients] object SetClient extends IOApp {
@@ -33,8 +32,10 @@ private[clients] object SetClient extends IOApp {
       .withMethod(Method.POST)
       .withEntity(SaveMessageRequest(message).asJson)
       .withUri(uri) use {
-      case Successful(result) => println(result).pure[F]
-      case e => println(e).pure[F]
+      case Successful(_) => ().pure[F]
+      case _ => ().pure[F]
+    } recover {
+      case _ => println("Error")
     }
   }
 
@@ -47,11 +48,11 @@ private[clients] object SetClient extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = for {
     _ <- resources().use {
-      case httpClient => {
+      httpClient => {
         lazy val repeat: IO[Unit] = for {
           message <- generateRandomMessage[IO]()
           _ <- doRequest(message)(httpClient)
-          _ <- IO.sleep(2.second)
+          //_ <- IO.sleep(100.milliseconds)
           _ <- IO.shift
           _ <- repeat
         } yield ()
