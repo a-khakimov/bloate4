@@ -3,15 +3,17 @@ package org.github.ainr.bloate4.repositories
 import cats.effect.Bracket
 import cats.syntax.all._
 import doobie.implicits._
-import doobie.util.fragment
+import doobie.refined.implicits._
+import doobie.util.fragment.Fragment
 import doobie.util.transactor.Transactor
 import org.github.ainr.bloate4.infrastructure.logging.{Labels, Logger}
+import org.github.ainr.bloate4.services.messages.domain.Message
 
 trait MessagesRepo[F[_]] {
 
-  def insertMessage(message: String): F[Unit]
+  def insertMessage(message: Message): F[Unit]
 
-  def selectRandomMessage(): F[Option[String]]
+  def selectRandomMessage(): F[Option[Message]]
 }
 
 object MessagesRepo {
@@ -26,7 +28,7 @@ class MessagesRepoDoobieImpl[F[_]](
   implicit bracket: Bracket[F, Throwable]
 ) extends MessagesRepo[F] {
 
-  override def insertMessage(message: String): F[Unit] = {
+  override def insertMessage(message: Message): F[Unit] = {
     for {
       _ <- SQL
         .insertMessage(message)
@@ -36,11 +38,11 @@ class MessagesRepoDoobieImpl[F[_]](
     } yield ()
   }
 
-  override def selectRandomMessage(): F[Option[String]] = {
+  override def selectRandomMessage(): F[Option[Message]] = {
     for {
       message <- SQL
         .selectRandomMessage
-        .query[String]
+        .query[Message]
         .option
         .transact(xa) <* logger.info("get_random_message_DB", "Get random message from DB")
     } yield message
@@ -48,10 +50,10 @@ class MessagesRepoDoobieImpl[F[_]](
 }
 
 object SQL {
-  def insertMessage(message: String): fragment.Fragment = {
+  def insertMessage(message: Message): Fragment = {
     sql"""INSERT INTO messages (message) VALUES ($message)"""
   }
-  def selectRandomMessage: fragment.Fragment = {
+  def selectRandomMessage: Fragment = {
     sql"""SELECT message FROM messages ORDER BY RANDOM() LIMIT 1"""
   }
 }

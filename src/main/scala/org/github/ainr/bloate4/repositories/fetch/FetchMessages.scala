@@ -10,7 +10,7 @@ import org.github.ainr.bloate4.repositories.MessagesRepo
 import org.github.ainr.bloate4.services.messages.domain.Message
 
 
-object FetchMessages extends Data[Int, String] {
+object FetchMessages extends Data[Int, Message] {
 
   override def name: String = "FetchMessages"
 

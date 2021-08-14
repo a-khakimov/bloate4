@@ -2,6 +2,7 @@ package org.github.ainr.bloate4.http
 
 import cats.effect.Sync
 import cats.syntax.all._
+import io.circe.refined._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.github.ainr.bloate4.http.Handler.{MessageResponse, SaveMessageRequest}

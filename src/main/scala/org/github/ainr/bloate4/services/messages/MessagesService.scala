@@ -1,7 +1,8 @@
 package org.github.ainr.bloate4.services.messages
 
-import cats.effect.{Concurrent, Sync, Timer}
+import cats.effect.{Concurrent, Timer}
 import cats.implicits._
+import eu.timepit.refined.auto._
 import fetch.{DataCache, DataSource, Fetch}
 import org.github.ainr.bloate4.infrastructure.logging.{Labels, Logger}
 import org.github.ainr.bloate4.repositories.MessagesRepo
@@ -17,10 +18,6 @@ trait MessagesService[F[_]] {
 }
 
 object MessagesService {
-
-  val validationRegex = "[a-zA-Zа-яА-ЯёЁ\\d\\s.,`'\\[\\]\\(\\)\"]+".r
-  val maxMessageLength = 200
-  val minMessageLength = 1
 
   final case class MessageSavingResult(result: String)
   final case class MessageGettingResult(result: String)
@@ -42,19 +39,20 @@ final class MessagesServiceImpl[F[_]: Concurrent: Timer](
 
   override def saveMessage(message: Message): F[MessageSavingResult] = {
     val result = for {
-      validatedMessage <- validateMessage(message)
-      _ <- repo.insertMessage(validatedMessage)
-      _ <- logger.info("save_message", s"Save message: [$validatedMessage]")
+      _ <- repo.insertMessage(message)
+      _ <- logger.info("save_message", s"Save message: [$message]")
       result = MessageSavingResult("Сообщение отправлено")
     } yield result
     result.recoverWith(saveMessageErrorHandler(_))
   }
 
   override def getRandomMessage(): F[Option[Message]] = {
+    val default: Message = "Привет, мой маленький пони!"
+
     Fetch
       .run(Fetch.optional(0, fetchMessage), messagesCache)
       .recoverWith {
-        case error => Option("Привет, мой маленький пони!").pure[F] <*
+        case error => Option(default).pure[F] <*
           logger.error("get_random_message_error", "Get random message error", error)
       } <* logger.info("get_random_message", "Get random message")
   }
@@ -70,15 +68,5 @@ final class MessagesServiceImpl[F[_]: Concurrent: Timer](
       case e => MessageSavingResult("Сообщение не отправлено").pure[F] <*
         logger.error("save_message_error", "Save message error", e)
     }
-  }
-
-  // TODO: Тут лучше заюзать мощь кошачьего валидатора
-  //  А еще лучше заюзать refined
-  private def validateMessage(message: Message): F[Message] = {
-    val len = message.length
-    if (len < minMessageLength) Sync[F].raiseError(TooShortMessageError)
-    else if (len > maxMessageLength) Sync[F].raiseError(TooLongMessageError)
-    else if (!validationRegex.pattern.matcher(message).matches()) Sync[F].raiseError(MessageSymbolsValidationError)
-    else message.pure[F]
   }
 }
