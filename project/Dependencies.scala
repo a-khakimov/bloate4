@@ -4,18 +4,21 @@ object Dependencies {
 
   object Versions {
     val cats_effect      = "2.5.1"
+    val cats_core        = "2.6.1"
     val fetch            = "1.3.2"
     val scaffeine        = "4.0.1"
     val doobie           = "0.13.4"
     val pureConfig       = "0.16.0"
-    val http4s           = "0.21.24"
-    val kindProjector    = "0.13.0"
+    val http4s           = "0.21.26"
     val flyway           = "7.11.1"
     val log4j            = "2.14.1"
     val circe            = "0.14.1"
     val logbackClassic   = "1.2.3"
     val scalaLogging     = "3.9.3"
     val prometheus       = "0.11.0"
+    val newtype          = "0.4.4"
+    val refined          = "0.9.27"
+    val scalatest        = "3.2.9"
   }
 
   import Versions._
@@ -23,8 +26,8 @@ object Dependencies {
   val App =
     List(
       "org.typelevel"                %% "cats-effect"         % cats_effect,
-      "org.typelevel"                %% "cats-core"           % "2.3.0",
-      "eu.timepit"                   %% "refined"             % "0.9.27",
+      "org.typelevel"                %% "cats-core"           % cats_core,
+      "eu.timepit"                   %% "refined"             % refined,
       "com.47deg"                    %% "fetch"               % fetch,
       "com.47deg"                    %% "fetch-debug"         % fetch,
       "com.github.blemale"           %% "scaffeine"           % scaffeine,
@@ -33,7 +36,7 @@ object Dependencies {
       "io.circe"                     %% "circe-generic"       % circe,
       "io.circe"                     %% "circe-parser"        % circe,
       "io.circe"                     %% "circe-refined"       % circe,
-      "io.estatico"                  %% "newtype"             % "0.4.4",
+      "io.estatico"                  %% "newtype"             % newtype,
       "ch.qos.logback"                % "logback-classic"     % logbackClassic,
       "org.tpolecat"                 %% "doobie-core"         % doobie,
       "org.tpolecat"                 %% "doobie-h2"           % doobie,
@@ -45,7 +48,7 @@ object Dependencies {
       "org.http4s"                   %% "http4s-dsl"          % http4s,
       "org.http4s"                   %% "http4s-prometheus-metrics" % http4s,
       "org.flywaydb"                  % "flyway-core"         % flyway,
-      "org.scalatest"                %% "scalatest"           % "3.2.9" % "test",
-      "io.prometheus"                 % "simpleclient"        % prometheus
+      "io.prometheus"                 % "simpleclient"        % prometheus,
+      "org.scalatest"                %% "scalatest"           % scalatest % Test
     )
 }
