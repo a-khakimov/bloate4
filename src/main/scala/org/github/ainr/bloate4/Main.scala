@@ -20,7 +20,7 @@ import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.metrics.MetricsOps
 import org.http4s.metrics.prometheus.{Prometheus, PrometheusExportService}
 import org.http4s.server.Router
-import org.http4s.server.middleware.Metrics
+import org.http4s.server.middleware.{CORS, CORSConfig, Metrics}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -54,11 +54,16 @@ object Main extends IOApp with LazyLogging {
           val versionService: VersionService[IO] = new VersionServiceImpl[IO](versionServiceLogger)
 
           val handler: http.Handler[IO] = new HandlerImpl[IO](messagesService, healthCheckService, versionService)
+
+          val originConfig = CORSConfig(anyOrigin = true, allowCredentials = true, maxAge = 1.day.toSeconds)
+
           val router = Router[IO](
             "/api" -> Metrics[IO](metrics)(handler.routes),
             "/" -> metricsService.routes
           )
-          http.server(router.orNotFound)(ec)
+
+          val routerWithCORS = CORS(router, originConfig)
+          http.server(routerWithCORS.orNotFound)(ec)
         }
       }
     } yield ExitCode.Success
